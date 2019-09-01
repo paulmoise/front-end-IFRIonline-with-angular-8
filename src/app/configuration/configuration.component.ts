@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators, FormBuilder } from '@angular/forms';
+import { FormGroup, FormControl, Validators, FormBuilder, AbstractControl, EmailValidator } from '@angular/forms';
 
 
 
@@ -12,9 +12,13 @@ export class ConfigurationComponent implements OnInit {
 
   title = 'Configuration ';
 
-  reactivForm: any = FormGroup;
+  reactivForm: FormGroup;
   infoFile : any;
   selectedRadio:number=1;
+
+  get specialite(){
+    return this.reactivForm.get('specialite');
+  }
 
   departments = [
     { id: 3, value: 'Dep 1' },
@@ -24,12 +28,42 @@ export class ConfigurationComponent implements OnInit {
 
 
   constructor(private fb: FormBuilder) {
-    this.reactivForm = fb.group({
-      type : new FormControl('1', Validators.required),
-      specialite : new FormControl('', Validators.required),
-      niveauEtude: new FormControl('1', Validators.required)
-    });
+    
    }
+
+
+   ngOnInit(){
+    this.reactivForm = this.fb.group({
+      type : new FormControl('1'),
+      specialite : new FormControl('',Validators.required),
+      niveauEtude: new FormControl('',Validators.required)
+    });
+
+    
+   
+
+    this.reactivForm.get('type').valueChanges
+    .subscribe(checkValue=>{
+      const specialite = this.reactivForm.get('specialite');
+      const niveauEtude = this.reactivForm.get('niveauEtude');
+      if(checkValue ==1 ){
+          specialite.setValidators(Validators.required);
+          niveauEtude.setValidators(Validators.required);
+          console.log(specialite.valid)
+          console.log(this.reactivForm.valid)
+      }else{
+          specialite.clearValidators();
+          niveauEtude.clearValidators();
+          
+      }
+
+      specialite.updateValueAndValidity();
+      niveauEtude.updateValueAndValidity();
+
+    })
+  }
+
+
 
    saveForm(submitForm: FormGroup){
      if(submitForm.valid){
@@ -40,12 +74,15 @@ export class ConfigurationComponent implements OnInit {
      }
    }
 
+   
+
    onChange(event){
     const file = event[0];
     console.log(file)
     this.infoFile = file;
 
    }
+
   
    pickFiles(){
       document.getElementById('file').click();
@@ -70,9 +107,16 @@ export class ConfigurationComponent implements OnInit {
 
   }
 
-  ngOnInit(): void {
-   
+
+  formValidation( control :AbstractControl){
+
+    const type = control.value;
+    if(type == 1){
+      control.disabled
+    }
   }
+
+
 
 } 
 
